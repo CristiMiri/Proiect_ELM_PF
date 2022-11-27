@@ -55,8 +55,10 @@ The month fields are handled as follows:
 -}
 monthsBetween : Date -> Date -> Maybe Int
 monthsBetween dA dB =
-    Nothing
-    -- Debug.todo "Implement Date.monthsBetween"
+    case(month dA,month dB) of
+        (Nothing,Nothing) ->Just (abs(12*(year dB- year dA)))
+        (Just a,Just b) -> Just(abs(12*(year dB- year dA)+(monthToInt b-monthToInt a)))
+        (_,_) ->Nothing
 
 
 {-| Compares two dates.
@@ -80,7 +82,14 @@ First, dates are compared by the year field. If it's equal, the month fields are
 -}
 compare : Date -> Date -> Order
 compare (Date d1) (Date d2) =
-    EQ
+    let
+        ord=case(d1.month,d2.month) of
+            (Nothing,Nothing) ->EQ
+            (Just a,Just b) -> compareMonth a b
+            (Nothing,Just b) ->GT
+            (Just a,Nothing) ->GT
+    in
+    chainCompare ord (Basics.compare d1.year d2.year) 
     -- Debug.todo "Implement Model.Date.compare"
 
 
@@ -118,8 +127,12 @@ offsetMonths months (Date d) =
 
 view : Date -> Html msg
 view (Date d) =
-    div [] []
-    -- Debug.todo "Implement Model.Date.view"
+    div [] [
+        text<|
+            case (d.month) of
+                Just m ->(monthToString m)++" "++String.fromInt d.year
+                Nothing->String.fromInt d.year
+    ]
 
 
 
@@ -280,5 +293,4 @@ compareMonth m1 m2 =
 -}
 monthsBetweenMonths : Month -> Month -> Int
 monthsBetweenMonths m1 m2 =
-    0
-    -- Debug.todo "Implement Date.monthsBetweenMonths"
+    abs((monthToInt m1) - (monthToInt m2))
